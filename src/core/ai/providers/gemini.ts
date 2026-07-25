@@ -15,7 +15,10 @@ export class GeminiProvider implements AiProvider {
         return ["gemini-3-flash-preview"]
     }
 
-    generateReply = async (conversation: Conversation, model: string, stream: boolean = true)=> {
+    generateReply = async (
+        conversation: Conversation, 
+        model: string
+    )=> {
         const text_response =  await this.client.interactions.create({
             store: false,
             model: model,
