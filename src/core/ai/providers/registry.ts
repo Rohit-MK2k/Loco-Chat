@@ -17,3 +17,13 @@ export const getProvider = (id: string, apiKey: string): AiProvider => {
     }
     return factory(apiKey)
 }
+
+export const ListProviderId = (): string[] =>{
+    const res:string[] = []
+
+    Object.keys(registry).forEach(providerId => {
+        res.push(providerId)
+    }); 
+
+    return res
+}
