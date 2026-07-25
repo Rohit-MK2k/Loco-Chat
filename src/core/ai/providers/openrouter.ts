@@ -18,8 +18,8 @@ interface OpenRouterConveration {
   messages: OpenRouterMessage[];
 };
 type OpenRouterResponse = {
-    choices?: Array<{
-        message?: {
+    choices: Array<{
+        message: {
             content?: string;
         };
     }>;
@@ -34,7 +34,7 @@ export class OpenrouterProvider implements AiProvider{
     
     
     constructor(
-        apiKey: String,
+        apiKey: string,
     ){
         this.header = {
             Authorization: `Bearer ${apiKey}`,
@@ -59,7 +59,7 @@ export class OpenrouterProvider implements AiProvider{
     generateReply = async (
         conversation: Conversation, 
         model: string, 
-        stream: boolean = true) =>
+    ) =>
     {
         const response = await fetch(`${this.baseURL}`, {
             method: 'POST',
@@ -70,12 +70,11 @@ export class OpenrouterProvider implements AiProvider{
             ))
         })
 
-        // if(!response.ok){
-        //     throw new Error(`Response status: ${response}`);
-        // }
+        if(!response.ok){
+            throw new Error(`Response status: ${response}`);
+        }
 
         const result = await response.json() as OpenRouterResponse;
-        // console.log(result)
 
         return result.choices?.[0]?.message?.content
     }
