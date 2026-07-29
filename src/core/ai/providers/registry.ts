@@ -19,11 +19,5 @@ export const getProvider = (id: string, apiKey: string): AiProvider => {
 }
 
 export const ListProviderId = (): string[] =>{
-    const res:string[] = []
-
-    Object.keys(registry).forEach(providerId => {
-        res.push(providerId)
-    }); 
-
-    return res
+    return Object.keys(registry)
 }
