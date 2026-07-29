@@ -69,3 +69,6 @@ package-lock.json
 .env
 env
 learning_docs
+
+.agents/skills
+skills-lock.json
