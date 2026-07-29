@@ -1,41 +1,67 @@
+import type { ProviderConfigLoader } from "./providerStoreTypes.js";
 import { getProvider } from "./registry.js";
 import type { AiProvider } from "./types.js";
 
-type ActiveSelection = {
+interface ActiveProviderState {
     providerId: string;
-    modelId: string
+    apiKey: string;
 }
 
-let current: ActiveSelection | null = null // null means nobody picked anything yet
+type ActiveProviders = ActiveProviderState[]
 
-export const setActive = (providerId:string, modelId: string): void => {
-    current = {
+let currentProviders: ActiveProviders = [] // if active provider's len is 0, then nop providers are set
+
+const _checkNullState = () => {
+    if (currentProviders.length === 0) {
+        throw new Error("no provider selected yet")
+    }
+}
+
+export const setOneActiveProvider = (providerId: string, apiKey: string): void => {
+    const provider = {
         providerId,
-        modelId
+        apiKey
+    }
+    currentProviders.push(provider)
+}
+
+export const setAllActiveProviders = (providers: ActiveProviders): void => {
+    currentProviders = providers
+}
+
+export const getActiveProvider = (providerId: string): {
+    id: string,
+    provider: AiProvider
+} => {
+    _checkNullState()
+
+    const activeProvider = currentProviders.find(
+        (provider) => provider.providerId === providerId
+    )
+
+    if (!activeProvider) {
+        throw new Error(`provider not found: ${providerId}`)
+    }
+
+    return {
+        id: activeProvider.providerId,
+        provider: getProvider(activeProvider.providerId, activeProvider.apiKey)
     }
 }
 
-export const getActiveProvider = (apiKey: string): AiProvider =>{
-    if (current == null){
+export const getActiveProvidersId = (): string[] => {
+    if (currentProviders.length == 0){
         throw new Error("no provider selected yet")
     }
 
-    return getProvider(current.providerId, apiKey)
+    return currentProviders.map((provider) => provider.providerId)
 }
 
-export const getActiveModel = (): string =>{
-    if (current == null){
-        throw new Error("no provider selected yet")
-    }
 
-    return current.modelId
+export const initActiveProvider = async (loader: ProviderConfigLoader): Promise<boolean> =>{
+    const config = await loader.loadAll()
+    if (config.length == 0) return false
+
+    setAllActiveProviders(config)
+    return true
 }
-
-export const getActiveProviderId = (): string => {
-    if (current == null){
-        throw new Error("no provider selected yet")
-    }
-
-    return current.providerId
-}
-
