@@ -11,6 +11,15 @@ export class GeminiProvider implements AiProvider {
         this.client = new GoogleGenAI({ apiKey })
     }
 
+    validateApiKey= async(): Promise<boolean> => {
+        try{
+            await this.client.models.list()
+            return true
+        }catch {
+            return false
+        }
+    }
+
     listModels(): string[] {
         return ["gemini-3-flash-preview"]
     }

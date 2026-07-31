@@ -12,6 +12,7 @@ export type Conversation = Message[];
 
 export interface AiProvider {
   id: string,
+  validateApiKey(): Promise<boolean>,
   listModels(): string[]
   generateReply(converstaion: Conversation, model: string): Promise<string | undefined>
 }

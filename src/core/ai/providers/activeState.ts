@@ -17,16 +17,24 @@ const _checkNullState = () => {
     }
 }
 
-export const setOneActiveProvider = (providerId: string, apiKey: string): void => {
-    const provider = {
-        providerId,
-        apiKey
+export const setOneActiveProvider = async (providerId: string, apiKey: string): Promise<void> => {
+    const provider = getProvider(providerId, apiKey)
+    const valid = await provider.validateApiKey()
+    if (!valid) {
+        throw new Error(`Invalid API key for provider: ${providerId}`)
     }
-    currentProviders.push(provider)
+    currentProviders.push({ providerId, apiKey })
 }
 
-export const setAllActiveProviders = (providers: ActiveProviders): void => {
-    currentProviders = providers
+export const setAllActiveProviders = async (providers: ActiveProviders): Promise<string[]> => {
+     const checks = await Promise.all(
+        providers.map(async (p) => ({
+            p,
+            valid: await getProvider(p.providerId, p.apiKey).validateApiKey()
+        }))
+    )
+    currentProviders = checks.filter(c => c.valid).map(c => c.p)
+    return checks.filter(c => !c.valid).map(c => c.p.providerId)
 }
 
 export const getActiveProvider = (providerId: string): {
@@ -62,6 +70,10 @@ export const initActiveProvider = async (loader: ProviderConfigLoader): Promise<
     const config = await loader.loadAll()
     if (config.length == 0) return false
 
-    setAllActiveProviders(config)
-    return true
+    const skipped = await setAllActiveProviders(config)
+    if (skipped.length > 0) {
+        console.warn(`Skipped invalid provider keys: ${skipped.join(", ")}`)
+    }
+
+    return currentProviders.length > 0
 }

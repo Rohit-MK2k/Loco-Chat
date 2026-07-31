@@ -46,6 +46,15 @@ export class OpenrouterProvider implements AiProvider{
         return ["nvidia/nemotron-3-ultra-550b-a55b:free"]
     }
 
+    validateApiKey= async(): Promise<boolean> => {
+        const response = await fetch('https://openrouter.ai/api/v1/auth/key', {
+            method: 'GET',
+            headers: this.header
+        })
+
+        return response.ok
+    }
+
     private openrouterSetBody(model: string, message: Conversation): OpenRouterConveration{
         return {
             model,
