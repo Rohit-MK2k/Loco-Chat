@@ -1,15 +1,15 @@
-import type { ProviderConfigLoader } from "./providerStoreTypes.js";
-import { getProvider } from "./registry.js";
-import type { AiProvider } from "./types.js";
+import type { ProviderConfigLoader } from "../providerStoreTypes.js";
+import { getProvider } from "../registry.js";
+import type { AiProvider } from "../types.js";
+
 
 interface ActiveProviderState {
     providerId: string;
     apiKey: string;
 }
-
 type ActiveProviders = ActiveProviderState[]
 
-let currentProviders: ActiveProviders = [] // if active provider's len is 0, then nop providers are set
+let currentProviders: ActiveProviders = []
 
 const _checkNullState = () => {
     if (currentProviders.length === 0) {
@@ -61,12 +61,10 @@ export const getActiveProvidersId = (): string[] => {
     if (currentProviders.length == 0){
         throw new Error("no provider selected yet")
     }
-
     return currentProviders.map((provider) => provider.providerId)
 }
 
-
-export const initActiveProvider = async (loader: ProviderConfigLoader): Promise<boolean> =>{
+export const initActiveProvider = async (loader: ProviderConfigLoader): Promise<boolean> => {
     const config = await loader.loadAll()
     if (config.length == 0) return false
 
