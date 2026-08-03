@@ -1,4 +1,5 @@
-import type { Conversation, AiProvider } from "./types.ts";
+import type { AiProvider } from "./types.ts";
+import type { GlobalConversation } from "../../../types/globalConversationTypes.js";
 
 
 type Header = {
@@ -55,7 +56,7 @@ export class OpenrouterProvider implements AiProvider{
         return response.ok
     }
 
-    private openrouterSetBody(model: string, message: Conversation): OpenRouterConveration{
+    private openrouterSetBody(model: string, message: GlobalConversation): OpenRouterConveration{
         return {
             model,
             messages: message.map(({ type, content }) => ({
@@ -66,7 +67,7 @@ export class OpenrouterProvider implements AiProvider{
     }
 
     generateReply = async (
-        conversation: Conversation, 
+        conversation: GlobalConversation, 
         model: string, 
     ) =>
     {

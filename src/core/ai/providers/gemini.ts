@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
-import type { AiProvider, Conversation } from "./types.ts";
+import type { AiProvider } from "./types.ts";
+import type { GlobalConversation } from "../../../types/globalConversationTypes.js";
 
 
 type GeminiConversation = {
@@ -30,7 +31,7 @@ export class GeminiProvider implements AiProvider {
         return ["gemini-3-flash-preview"]
     }
 
-    private buildGeminiConveration = (conversation: Conversation): GeminiConversation[] =>{
+    private buildGeminiConveration = (conversation: GlobalConversation): GeminiConversation[] =>{
         return conversation.map(({ type, content }) => ({
             role: type === "user_input" ? "user" : "model",
             parts: content.map(({ text }) => ({ text })),
@@ -38,7 +39,7 @@ export class GeminiProvider implements AiProvider {
     }
 
     generateReply = async (
-        conversation: Conversation, 
+        conversation:  GlobalConversation, 
         model: string
     ): Promise<string> => {
         const response = await this.client.models.generateContent({
