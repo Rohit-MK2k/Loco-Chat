@@ -1,6 +1,6 @@
 import type { GlobalConversation } from "../../../types/globalConversationTypes.js";
 import { getActiveProvider } from "../providers/states/connectedProviders.js";
-import { getSelectedProviderId } from "../providers/states/activeSelection.js";
+import { getSelectedProviderId, listSelectedProviderModels } from "../providers/states/activeSelection.js";
 
 type ModelSelection = {
     providerId: string,
@@ -14,6 +14,12 @@ export class Session {
 
     selectModel(model: string): void {
         const providerId = getSelectedProviderId()
+        const availableModels = listSelectedProviderModels()
+
+        if (!availableModels.includes(model)){
+            throw new Error(`Model "${model}" is not available for the provider "${providerId}"`)
+        }
+
         this.modelSelection = { providerId, model }
     }
 
