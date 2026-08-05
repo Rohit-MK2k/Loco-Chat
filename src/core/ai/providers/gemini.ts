@@ -27,8 +27,13 @@ export class GeminiProvider implements AiProvider {
         }
     }
 
-    listModels(): string[] {
-        return ["gemini-3-flash-preview"]
+    listModels = async (): Promise<string[]> => {
+        const response = await this.client.models.list()
+
+        return response.page
+            .filter(({ supportedActions }) => supportedActions?.includes("generateContent"))
+            .map(({ name, displayName }) => name ?? displayName)
+            .filter((model): model is string => Boolean(model))
     }
 
     private buildGeminiConveration = (conversation: GlobalConversation): GeminiConversation[] =>{
