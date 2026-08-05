@@ -15,6 +15,6 @@ export const getSelectedProviderId = (): string => {
     return selectedProviderId
 }
 
-export const listSelectedProviderModels = (): string[] => {
-    return getActiveProvider(getSelectedProviderId()).provider.listModels()
+export const listSelectedProviderModels = async (): Promise<string[]> => {
+    return await getActiveProvider(getSelectedProviderId()).provider.listModels()
 }

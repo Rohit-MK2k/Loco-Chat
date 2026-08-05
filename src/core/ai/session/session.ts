@@ -12,10 +12,10 @@ export class Session {
     private conversation: GlobalConversation = []
     private modelSelection: ModelSelection | null = null
 
-    selectModel(model: string): void {
+    selectModel = async (model: string) => {
         const providerId = getSelectedProviderId()
-        const availableModels = listSelectedProviderModels()
-
+        const availableModels = await listSelectedProviderModels()
+        
         if (!availableModels.includes(model)){
             throw new Error(`Model "${model}" is not available for the provider "${providerId}"`)
         }
