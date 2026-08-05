@@ -43,7 +43,7 @@ export class OpenrouterProvider implements AiProvider{
         }
     }
 
-    listModels = async(): Promise<string[]> => {
+    listModels(): string[]{
         return ["nvidia/nemotron-3-ultra-550b-a55b:free"]
     }
 

@@ -4,7 +4,7 @@ import type { GlobalConversation } from "../../../types/globalConversationTypes.
 export interface AiProvider {
   id: string,
   validateApiKey(): Promise<boolean>,
-  listModels(): Promise<string[]>
+  listModels(): string[]
   generateReply(converstaion: GlobalConversation, model: string): Promise<string | undefined>
 }
 
