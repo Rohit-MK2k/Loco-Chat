@@ -1,15 +1,14 @@
-import type { GlobalConversation } from "../../../types/globalConversationTypes.js";
 import { getActiveProvider } from "../providers/states/connectedProviders.js";
 import { getSelectedProviderId, listSelectedProviderModels } from "../providers/states/activeSelection.js";
+import type { AppMessage } from "../providers/types.js";
 
 type ModelSelection = {
     providerId: string,
     model: string
 }
 
-
 export class Session {
-    private conversation: GlobalConversation = []
+    private conversation: AppMessage[] = []
     private modelSelection: ModelSelection | null = null
 
     selectModel = async (model: string) => {
@@ -35,13 +34,13 @@ export class Session {
             )
         }
 
-        this.conversation.push({ type: "user_input", content: [{ type: "text", text }] })
+        this.conversation.push({ role: "user", content: text })
 
         const { provider } = getActiveProvider(currentProviderId)
         const reply = await provider.generateReply(this.conversation, this.modelSelection.model)
 
         if (reply) {
-            this.conversation.push({ type: "model_output", content: [{ type: "text", text: reply }] })
+            this.conversation.push({ role: "assistant", content: reply })
         }
         return reply
     }

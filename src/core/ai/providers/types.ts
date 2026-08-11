@@ -1,10 +1,11 @@
-import type { GlobalConversation } from "../../../types/globalConversationTypes.js"
-
+export type AppMessage = {
+    role: "user" | "assistant";
+    content: string;
+};
 
 export interface AiProvider {
   id: string,
   validateApiKey(): Promise<boolean>,
   listModels(): Promise<string[]>
-  generateReply(converstaion: GlobalConversation, model: string): Promise<string | undefined>
+  generateReply(messages: AppMessage[], model: string): Promise<string | undefined>
 }
-

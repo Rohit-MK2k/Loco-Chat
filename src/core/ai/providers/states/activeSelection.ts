@@ -10,11 +10,33 @@ export const selectProvider = (providerId: string): void => {
     selectedProviderId = providerId
 }
 
+const listModelsbyProviderId= async (providerId: string): Promise<string[]> => {
+    return await getActiveProvider(providerId).provider.listModels()
+}
+
 export const getSelectedProviderId = (): string => {
     if (!selectedProviderId) throw new Error("No provider selected")
     return selectedProviderId
 }
 
 export const listSelectedProviderModels = async (): Promise<string[]> => {
-    return await getActiveProvider(getSelectedProviderId()).provider.listModels()
+    return await listModelsbyProviderId(getSelectedProviderId())
 }
+
+
+
+
+
+
+
+// export class ActiveProviderState{
+//     private selectedProviderAndModel: Record<string, string>
+//     private activeProviderList: string[]
+
+//     constructor(){
+//         this.activeProviderList = getActiveProvidersId()
+//     }
+
+    
+
+// }
