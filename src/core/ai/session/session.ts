@@ -1,47 +1,28 @@
 import { getActiveProvider } from "../providers/states/connectedProviders.js";
-import { getSelectedProviderId, listSelectedProviderModels } from "../providers/states/activeSelection.js";
+import { ProviderSelection } from "../providers/states/providerSelection.js";
 import type { AppMessage } from "../providers/types.js";
 
-type ModelSelection = {
-    providerId: string,
-    model: string
-}
-
 export class Session {
-    private conversation: AppMessage[] = []
-    private modelSelection: ModelSelection | null = null
+    private conversation: AppMessage[] = [];
+    private providerSelection = new ProviderSelection();
 
-    selectModel = async (model: string) => {
-        const providerId = getSelectedProviderId()
-        const availableModels = await listSelectedProviderModels()
-        
-        if (!availableModels.includes(model)){
-            throw new Error(`Model "${model}" is not available for the provider "${providerId}"`)
-        }
-
-        this.modelSelection = { providerId, model }
+    getAvailableModels(): Promise<Record<string, string[]>> {
+        return this.providerSelection.getAvailableModels();
     }
 
-    async sendMessage(text:string): Promise<String | undefined> {
-        if (!this.modelSelection) {
-            throw new Error("No model selected — call selectModel() first")
-        }
+    selectModel(providerId: string, modelId: string): Promise<void> {
+        return this.providerSelection.select(providerId, modelId);
+    }
 
-        const currentProviderId = getSelectedProviderId()
-        if (this.modelSelection.providerId !== currentProviderId) {
-            throw new Error(
-                `Provider changed since model was picked (was ${this.modelSelection.providerId}, now ${currentProviderId}). Re-select a model.`
-            )
-        }
+    async sendMessage(text: string): Promise<string | undefined> {
+        const { providerId, modelId } = this.providerSelection.getSelection();
 
-        this.conversation.push({ role: "user", content: text })
+        this.conversation.push({ role: "user", content: text });
 
-        const { provider } = getActiveProvider(currentProviderId)
-        const reply = await provider.generateReply(this.conversation, this.modelSelection.model)
+        const { provider } = getActiveProvider(providerId);
+        const reply = await provider.generateReply(this.conversation, modelId);
 
-        if (reply) {
-            this.conversation.push({ role: "assistant", content: reply })
-        }
-        return reply
+        if (reply) this.conversation.push({ role: "assistant", content: reply });
+        return reply;
     }
 }

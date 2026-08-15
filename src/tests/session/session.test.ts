@@ -4,8 +4,6 @@ import * as dotenv from "dotenv"
 
 import { Session } from "../../core/ai/session/session.js"
 import { setOneActiveProvider } from "../../core/ai/providers/states/connectedProviders.js"
-import { listSelectedProviderModels, selectProvider } from "../../core/ai/providers/states/activeSelection.js"
-
 
 dotenv.config()
 
@@ -15,29 +13,29 @@ interface ProviderCase {
     apiKey: string | undefined
 }
 const providerTestCases: ProviderCase[] = [
-    { id: "google", envVarName: "GOOGLE_AI_API", apiKey: process.env.GOOGLE_AI_API},
-    { id: "openRouter", envVarName: "OPENROUETER_AI_API", apiKey: process.env.OPENROUETER_AI_API},
+    { id: "google", envVarName: "GOOGLE_AI_API", apiKey: process.env.GOOGLE_AI_API },
+    { id: "openRouter", envVarName: "OPENROUETER_AI_API", apiKey: process.env.OPENROUETER_AI_API },
 ]
 
 providerTestCases.forEach(({ id, envVarName, apiKey }) => {
     test(`Session accepts every model advertised by ${id}`, async (t) => {
         if (!apiKey) {
-            throw new Error(`${id}'s env varible name ${envVarName} is not set`)
+            throw new Error(`${id}'s env variable name ${envVarName} is not set`)
         }
 
         await setOneActiveProvider(id, apiKey)
-        selectProvider(id)
 
         const session = new Session()
-        const providerModelIdList = await listSelectedProviderModels()
+        const availableModels = await session.getAvailableModels()
+        const modelList = availableModels[id] ?? []
 
-        if (providerModelIdList.length === 0) {
+        if (modelList.length === 0) {
             throw new Error(`No model found for the provider ${id}`)
         }
 
-        providerModelIdList.forEach((modelId) => {
-            t.test(`accepts model ${modelId}`, () => {
-                assert.doesNotThrow(() => session.selectModel(modelId))
+        modelList.forEach((modelId) => {
+            t.test(`accepts model ${modelId}`, async () => {
+                await assert.doesNotReject(() => session.selectModel(id, modelId))
             })
         })
     })
@@ -52,14 +50,15 @@ test("Session rejects a model that is not offered by the selected provider", asy
     }
 
     await setOneActiveProvider("google", apiKey)
-    selectProvider("google")
 
     const session = new Session()
 
-    assert.rejects(
-        async () => await session.selectModel("not-a-real-model"),
-        /not available for the provider/,
+    await assert.rejects(
+        async () => await session.selectModel("google", "not-a-real-model"),
+        /not available for provider/,
     )
 
-    assert.doesNotThrow(async () => await session.selectModel("models/gemini-3-flash-preview"))
+    await assert.doesNotReject(async () => await session.selectModel("google", "gemini-3-flash-preview"))
 })
+
+
