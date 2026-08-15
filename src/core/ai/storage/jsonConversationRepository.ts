@@ -1,0 +1,29 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+import os from "node:os";
+import type { Conversation, ConversationRepository } from "./conversationRepository.js";
+
+// ponytail: NODE_ENV switch, add explicit config injection if env var isn't enough
+const storageDir = process.env.NODE_ENV === "production"
+    ? path.join(os.homedir(), ".locoChat", "conversations")
+    : path.join(process.cwd(), "data", "conversations");
+
+export class JsonConversationRepository implements ConversationRepository {
+    async save(conversation: Conversation): Promise<void> {
+        await fs.mkdir(storageDir, { recursive: true });
+        await fs.writeFile(
+            path.join(storageDir, `${conversation.sessionId}.json`),
+            JSON.stringify(conversation),
+            "utf-8"
+        );
+    }
+
+    async load(sessionId: string): Promise<Conversation | null> {
+        try {
+            const raw = await fs.readFile(path.join(storageDir, `${sessionId}.json`), "utf-8");
+            return JSON.parse(raw) as Conversation;
+        } catch {
+            return null;
+        }
+    }
+}

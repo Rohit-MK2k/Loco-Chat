@@ -4,8 +4,15 @@ import * as dotenv from "dotenv"
 
 import { Session } from "../../core/ai/session/session.js"
 import { setOneActiveProvider } from "../../core/ai/providers/states/connectedProviders.js"
+import type { ConversationRepository } from "../../core/ai/storage/conversationRepository.js"
 
 dotenv.config()
+
+// No-op store — tests don't touch the filesystem
+const mockStore: ConversationRepository = {
+    save: async () => {},
+    load: async () => null,
+}
 
 interface ProviderCase {
     id: string,
@@ -25,7 +32,7 @@ providerTestCases.forEach(({ id, envVarName, apiKey }) => {
 
         await setOneActiveProvider(id, apiKey)
 
-        const session = new Session()
+        const session = new Session(mockStore)
         const availableModels = await session.getAvailableModels()
         const modelList = availableModels[id] ?? []
 
@@ -51,7 +58,7 @@ test("Session rejects a model that is not offered by the selected provider", asy
 
     await setOneActiveProvider("google", apiKey)
 
-    const session = new Session()
+    const session = new Session(mockStore)
 
     await assert.rejects(
         async () => await session.selectModel("google", "not-a-real-model"),
