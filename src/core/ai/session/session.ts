@@ -5,11 +5,22 @@ import type { AppMessage } from "../providers/types.js";
 import type { ConversationRepository } from "../storage/conversationRepository.js";
 
 export class Session {
-    readonly sessionId = randomUUID();
+    readonly sessionId: string;
     private conversation: AppMessage[] = [];
     private providerSelection = new ProviderSelection();
 
-    constructor(private store: ConversationRepository) {}
+    constructor(private store: ConversationRepository, sessionId?: string) {
+        this.sessionId = sessionId ?? randomUUID();
+    }
+
+    static async restore(sessionId: string, store: ConversationRepository): Promise<Session> {
+        const saved = await store.load(sessionId);
+        if (!saved) throw new Error(`Session not found: ${sessionId}`);
+        const session = new Session(store, sessionId);
+        session.conversation = saved.messages;
+        await session.providerSelection.select(saved.providerId, saved.modelId);
+        return session;
+    }
 
     getAvailableModels(): Promise<Record<string, string[]>> {
         return this.providerSelection.getAvailableModels();
@@ -32,6 +43,8 @@ export class Session {
             await this.store.save({
                 sessionId: this.sessionId,
                 messages: this.conversation,
+                providerId,
+                modelId,
                 createdAt: Date.now(),
             });
         }
