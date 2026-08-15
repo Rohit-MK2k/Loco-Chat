@@ -12,6 +12,7 @@ dotenv.config()
 const mockStore: ConversationRepository = {
     save: async () => {},
     load: async () => null,
+    list: async () => [],
 }
 
 interface ProviderCase {

@@ -26,4 +26,13 @@ export class JsonConversationRepository implements ConversationRepository {
             return null;
         }
     }
+
+    async list(): Promise<string[]> {
+        try {
+            const files = await fs.readdir(storageDir);
+            return files.filter(f => f.endsWith(".json")).map(f => f.slice(0, -5));
+        } catch {
+            return [];
+        }
+    }
 }
