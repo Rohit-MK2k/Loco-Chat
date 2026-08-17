@@ -1,15 +1,15 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import type { Conversation, ConversationRepository } from "./conversationRepository.js";
+import type { SessionData, SessionRepository } from "../repo/sessionRepository.js";
 
 // ponytail: NODE_ENV switch, add explicit config injection if env var isn't enough
 const storageDir = process.env.NODE_ENV === "production"
     ? path.join(os.homedir(), ".locoChat", "conversations")
     : path.join(process.cwd(), "data", "conversations");
 
-export class JsonConversationRepository implements ConversationRepository {
-    async save(conversation: Conversation): Promise<void> {
+export class JsonConversationRepository implements SessionRepository {
+    async save(conversation: SessionData): Promise<void> {
         await fs.mkdir(storageDir, { recursive: true });
         await fs.writeFile(
             path.join(storageDir, `${conversation.sessionId}.json`),
@@ -18,10 +18,10 @@ export class JsonConversationRepository implements ConversationRepository {
         );
     }
 
-    async load(sessionId: string): Promise<Conversation | null> {
+    async load(sessionId: string): Promise<SessionData | null> {
         try {
             const raw = await fs.readFile(path.join(storageDir, `${sessionId}.json`), "utf-8");
-            return JSON.parse(raw) as Conversation;
+            return JSON.parse(raw) as SessionData;
         } catch {
             return null;
         }

@@ -4,19 +4,19 @@ import * as dotenv from "dotenv"
 
 import { Session } from "../../core/ai/session/session.js"
 import { setOneActiveProvider } from "../../core/ai/providers/states/connectedProviders.js"
-import type { Conversation, ConversationRepository } from "../../core/ai/storage/conversationRepository.js"
+import type { SessionData, SessionRepository } from "../../core/ai/session/repo/sessionRepository.js"
 
 dotenv.config()
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
-const makeStore = (conv: Conversation): ConversationRepository => ({
+const makeStore = (sess: SessionData): SessionRepository => ({
     save: async () => {},
-    load: async (id) => (id === conv.sessionId ? conv : null),
-    list: async () => [conv.sessionId],
+    load: async (id) => (id === sess.sessionId ? sess : null),
+    list: async () => [sess.sessionId],
 })
 
-const nullStore: ConversationRepository = {
+const nullStore: SessionRepository = {
     save: async () => {},
     load: async () => null,
     list: async () => [],
@@ -79,10 +79,10 @@ test("Session.restore preserves sessionId — google cases", async (t) => {
     const modelId = models[0]
     
     for (const base of googleBase) {
-        const conv: Conversation = { ...base, providerId: "google", modelId }
-        t.test(`restores sessionId ${conv.sessionId}`, async () => {
-            const session = await Session.restore(conv.sessionId, makeStore(conv))
-            assert.strictEqual(session.sessionId, conv.sessionId)
+        const sess: SessionData = { ...base, providerId: "google", modelId }
+        t.test(`restores sessionId ${sess.sessionId}`, async () => {
+            const session = await Session.restore(sess.sessionId, makeStore(sess))
+            assert.strictEqual(session.sessionId, sess.sessionId)
         })
     }
 })
@@ -99,10 +99,10 @@ test("Session.restore preserves sessionId — openRouter cases", async (t) => {
     const modelId = models[0]
 
     for (const base of openRouterBase) {
-        const conv: Conversation = { ...base, providerId: "openRouter", modelId }
-        t.test(`restores sessionId ${conv.sessionId}`, async () => {
-            const session = await Session.restore(conv.sessionId, makeStore(conv))
-            assert.strictEqual(session.sessionId, conv.sessionId)
+        const sess: SessionData = { ...base, providerId: "openRouter", modelId }
+        t.test(`restores sessionId ${sess.sessionId}`, async () => {
+            const session = await Session.restore(sess.sessionId, makeStore(sess))
+            assert.strictEqual(session.sessionId, sess.sessionId)
         })
     }
 })
@@ -115,7 +115,7 @@ test("Session.restore rejects invalid modelId — google", async () => {
 
     await setOneActiveProvider("google", apiKey)
 
-    const conv: Conversation = {
+    const sess: SessionData = {
         sessionId: "bbbb0001-0000-0000-0000-000000000001",
         providerId: "google",
         modelId: "not-a-real-google-model",
@@ -124,7 +124,7 @@ test("Session.restore rejects invalid modelId — google", async () => {
     }
 
     await assert.rejects(
-        () => Session.restore(conv.sessionId, makeStore(conv)),
+        () => Session.restore(sess.sessionId, makeStore(sess)),
         /not available for provider/
     )
 })
@@ -135,7 +135,7 @@ test("Session.restore rejects invalid modelId — openRouter", async () => {
 
     await setOneActiveProvider("openRouter", apiKey)
 
-    const conv: Conversation = {
+    const sess: SessionData = {
         sessionId: "bbbb0002-0000-0000-0000-000000000002",
         providerId: "openRouter",
         modelId: "not-a-real-openrouter-model",
@@ -144,7 +144,7 @@ test("Session.restore rejects invalid modelId — openRouter", async () => {
     }
 
     await assert.rejects(
-        () => Session.restore(conv.sessionId, makeStore(conv)),
+        () => Session.restore(sess.sessionId, makeStore(sess)),
         /not available for provider/
     )
 })

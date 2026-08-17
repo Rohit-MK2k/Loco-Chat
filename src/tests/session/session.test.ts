@@ -4,12 +4,12 @@ import * as dotenv from "dotenv"
 
 import { Session } from "../../core/ai/session/session.js"
 import { setOneActiveProvider } from "../../core/ai/providers/states/connectedProviders.js"
-import type { ConversationRepository } from "../../core/ai/storage/conversationRepository.js"
+import type { SessionRepository } from "../../core/ai/session/repo/sessionRepository.js"
 
 dotenv.config()
 
 // No-op store — tests don't touch the filesystem
-const mockStore: ConversationRepository = {
+const mockStore: SessionRepository = {
     save: async () => {},
     load: async () => null,
     list: async () => [],

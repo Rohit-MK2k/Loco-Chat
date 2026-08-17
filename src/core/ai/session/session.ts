@@ -2,18 +2,18 @@ import { randomUUID } from "node:crypto";
 import { getActiveProvider } from "../providers/states/connectedProviders.js";
 import { ProviderSelection } from "../providers/states/providerSelection.js";
 import type { AppMessage } from "../providers/types.js";
-import type { ConversationRepository } from "../storage/conversationRepository.js";
+import type { SessionRepository } from "./repo/sessionRepository.js";
 
 export class Session {
     readonly sessionId: string;
     private conversation: AppMessage[] = [];
     private providerSelection = new ProviderSelection();
 
-    constructor(private store: ConversationRepository, sessionId?: string) {
+    constructor(private store: SessionRepository, sessionId?: string) {
         this.sessionId = sessionId ?? randomUUID();
     }
 
-    static async restore(sessionId: string, store: ConversationRepository): Promise<Session> {
+    static async restore(sessionId: string, store: SessionRepository): Promise<Session> {
         const saved = await store.load(sessionId);
         if (!saved) throw new Error(`Session not found: ${sessionId}`);
         const session = new Session(store, sessionId);
