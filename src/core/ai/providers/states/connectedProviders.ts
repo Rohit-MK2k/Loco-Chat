@@ -1,4 +1,4 @@
-import type { ProviderConfigLoader } from "../providerStoreTypes.js";
+import type { ProviderAuthReader } from "../repo/providerAuthRepository.js";
 import { getProvider } from "../registry.js";
 import type { AiProvider } from "../types.js";
 
@@ -64,7 +64,7 @@ export const getActiveProvidersId = (): string[] => {
     return currentProviders.map((provider) => provider.providerId)
 }
 
-export const initActiveProvider = async (loader: ProviderConfigLoader): Promise<boolean> => {
+export const initActiveProvider = async (loader: ProviderAuthReader): Promise<boolean> => {
     const config = await loader.loadAll()
     if (config.length == 0) return false
 
