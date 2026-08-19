@@ -1,26 +1,20 @@
-import { createModels, type Context, type Message } from '@earendil-works/pi-ai';
+import { createModels, type Context, type Message, type Provider } from '@earendil-works/pi-ai';
 import type { AiProvider, AppMessage } from './types.js';
+
+type ProviderFactory = () => Provider
 
 export abstract class BasePiAiProvider implements AiProvider {
     public abstract id: string;
     protected apiKey: string;
     protected modelsCollection;
 
-    constructor(apiKey: string, providerFactory: any) {
+    constructor(apiKey: string, providerFactory: ProviderFactory) {
         this.apiKey = apiKey;
         this.modelsCollection = createModels();
         this.modelsCollection.setProvider(providerFactory());
     }
 
-    validateApiKey = async (): Promise<boolean> => {
-        try {
-            const auth = await this.modelsCollection.getAuth(this.id, { apiKey: this.apiKey });
-            return !!auth;
-        } catch {
-            return false;
-        }
-    }
-
+    abstract validateApiKey(): Promise<boolean>;
     abstract listModels(): Promise<string[]>;
 
     generateReply = async (messages: AppMessage[], modelId: string): Promise<string | undefined> => {
@@ -48,6 +42,6 @@ export abstract class BasePiAiProvider implements AiProvider {
         };
 
         const response = await this.modelsCollection.complete(model, piContext, { apiKey: this.apiKey });
-        return response.content.find((block: any) => block.type === 'text')?.type;
+        return response.content.find((block) => block.type === "text")?.text;
     }
 }
