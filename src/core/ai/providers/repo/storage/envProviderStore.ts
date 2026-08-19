@@ -5,7 +5,7 @@ dotenv.config();
 
 const envVar: Record<string, string> = {
     google: "GOOGLE_AI_API",
-    openRouter: "OPENROUETER_AI_API"
+    openRouter: "OPENROUTER_AI_API"
 }
 
 export class EnvProviderStore implements ProviderAuthReader {
