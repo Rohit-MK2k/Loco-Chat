@@ -3,8 +3,13 @@ import { getActiveProvider, getActiveProvidersId } from "./connectedProviders.js
 export class ProviderSelection {
     private providerId: string | null = null;
     private modelId: string | null = null;
+    private cachedModels: Record<string, string[]> | null = null;
 
-    async getAvailableModels(): Promise<Record<string, string[]>> {
+    async getAvailableModels(forceRefresh = false): Promise<Record<string, string[]>> {
+        if (this.cachedModels && !forceRefresh) {
+            return this.cachedModels;
+        }
+
         const providerIds = getActiveProvidersId();
         const entries = await Promise.all(
             providerIds.map(async (id) => {
@@ -12,7 +17,8 @@ export class ProviderSelection {
                 return [id, models] as [string, string[]];
             })
         );
-        return Object.fromEntries(entries);
+        this.cachedModels = Object.fromEntries(entries);
+        return this.cachedModels;
     }
 
     async select(providerId: string, modelId: string): Promise<void> {
