@@ -67,7 +67,7 @@ Each provider's SDK has its own request/response shape (message format, field na
 
 ### 4.3 Conversation History
 
-Standard persisted chat history: conversations are stored, retrievable, and organized (globally, or nested under a project). Backed by SQLite.
+Standard persisted chat history: conversations are stored, retrievable, and organized (globally, or nested under a project). Currently backed by flat file storage (one JSON file per session); SQLite may be considered in the near future as complexity grows.
 
 Conversation state is owned and persisted locally by the application, not by an AI provider. Some provider APIs offer their own server-side conversation/session storage as a convenience — this is intentionally not used, since relying on it would mean conversation data lives outside the user's machine, conflicting with the local-first principle. The application always sends the relevant conversation history itself on each request, built from its own local record.
 
@@ -93,7 +93,7 @@ Decision logic at upload time:
 1. **Measure the actual constraint** — token count for text (not file size or page count, since those don't reliably predict token count), or count/size for images.
 2. **If it fits inline** → always just inline it directly, regardless of whether an embedding model is configured. Inlining the full content is strictly better than retrieval when there's no size constraint forcing a choice.
 3. **If it doesn't fit:**
-   - **Embedding model configured** → run the RAG ingestion pipeline: chunk → embed → store in a vector table (SQLite-backed at this scale, no dedicated vector DB needed yet) → retrieve top-K relevant chunks per query → inject those into the prompt.
+   - **Embedding model configured** → run the RAG ingestion pipeline: chunk → embed → store in a vector table (flat file storage for now; SQLite may be considered in the near future) → retrieve top-K relevant chunks per query → inject those into the prompt.
    - **No embedding model configured** → **reject the upload with a clear message** telling the user to configure an embedding provider. Never silently truncate — silent truncation looks like it worked while quietly discarding most of the document, which is worse than an explicit rejection.
 
 **Images at scale:** a single image is simply inlined (base64), same as any small file — no embedding needed. Retrieval only becomes relevant for **collections** of images (e.g. "find the photo where I'm at the beach"), which uses an image embedding model (e.g. CLIP) so images and text queries land in the same vector space. Same decision logic applies: only invoked when there's an actual search-across-many-images need, and only if a CLIP-like model is configured.
@@ -172,14 +172,14 @@ This same tool-calling loop (model → tool call → core executes → result fe
 - Pi integrates as an in-process, provider-like SDK module
 - File/image upload: inline directly when it fits in context; fall back to RAG (chunk → embed → retrieve) only when it doesn't, and only if an embedding model is configured — otherwise reject with a clear message (no silent truncation)
 - Web search is built natively via a provider-agnostic search API + tool-calling loop, not a provider's built-in search tool
-- Conversation history is owned and persisted locally (SQLite); provider-side session/history storage is not used, to keep all conversation data on the user's machine
+- Conversation history is owned and persisted locally (flat file storage, one JSON per session); provider-side session/history storage is not used, to keep all conversation data on the user's machine
 - Provider integrations are normalized behind a common interface at the boundary; shared chat logic never depends on a specific provider's SDK types
 - API keys and other secrets are loaded from environment variables (`.env`, excluded from version control), never hardcoded in source
 
 ## 6. Open Decisions
 
 - **Skills architecture** — format and execution model not yet designed
-- **Exact SQLite schema** (including the vector-storage table for RAG) — intentionally left until real data (messages, memory, chunks) exists, to avoid designing a schema based on guesses
+- **Storage migration to SQLite** — currently flat file storage; SQLite may be considered in the near future once data complexity (messages, memory, RAG chunks) justifies it. Schema design intentionally deferred until real data shapes are known
 - **Which embedding model(s) to support first** for the RAG path, and which image embedding model for image-collection search
 - **Which search API to use** for native web search (e.g. Brave, Tavily, SerpAPI, Bing/Google) — not yet chosen
 - **Deep research feature** — design deferred until basic web search is implemented
@@ -194,4 +194,4 @@ The core send-a-message/get-a-reply primitive exists as a standalone script (no 
 
 Immediate scope: a plain interactive multi-turn loop (terminal input → append to conversation → call provider → append reply → repeat), still entirely within the standalone core — no Electron, React, or database involved yet.
 
-The provider abstraction described in 4.4 (a common interface behind which multiple AI backends sit) is introduced once a second provider is actually added, not before — the interface shape should be drawn from a real second implementation, not guessed in advance. Electron/React wiring, SQLite-backed persistence, and Pi integration all come after this core loop is solid and understood on its own.
+The provider abstraction described in 4.4 (a common interface behind which multiple AI backends sit) is introduced once a second provider is actually added, not before — the interface shape should be drawn from a real second implementation, not guessed in advance. Electron/React wiring, flat file persistence, and Pi integration all come after this core loop is solid and understood on its own.
