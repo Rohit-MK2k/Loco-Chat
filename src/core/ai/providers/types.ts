@@ -1,6 +1,7 @@
 export type AppMessage = {
     role: "user" | "assistant";
     content: string;
+    timestamp: number;
 };
 
 export interface AiProvider {

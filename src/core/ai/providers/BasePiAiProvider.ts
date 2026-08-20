@@ -27,7 +27,7 @@ export abstract class BasePiAiProvider implements AiProvider {
                     return {
                         role: "user",
                         content: msg.content,
-                        timestamp: Date.now()
+                        timestamp: msg.timestamp
                     };
                 } else {
                     // We bypass TypeScript's strict AssistantMessage type since 
@@ -35,7 +35,7 @@ export abstract class BasePiAiProvider implements AiProvider {
                     return {
                         role: "assistant",
                         content: [{ type: "text", text: msg.content }],
-                        timestamp: Date.now()
+                        timestamp: msg.timestamp
                     } as any;
                 }
             })
