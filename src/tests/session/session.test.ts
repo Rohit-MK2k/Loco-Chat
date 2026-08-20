@@ -13,6 +13,7 @@ const mockStore: SessionRepository = {
     save: async () => {},
     load: async () => null,
     list: async () => [],
+    delete: async () => {},
 }
 
 interface ProviderCase {
@@ -22,7 +23,7 @@ interface ProviderCase {
 }
 const providerTestCases: ProviderCase[] = [
     { id: "google", envVarName: "GOOGLE_AI_API", apiKey: process.env.GOOGLE_AI_API },
-    { id: "openRouter", envVarName: "OPENROUETER_AI_API", apiKey: process.env.OPENROUETER_AI_API },
+    { id: "openRouter", envVarName: "OPENROUTER_AI_API", apiKey: process.env.OPENROUTER_AI_API ?? process.env.OPENROUETER_AI_API },
 ]
 
 providerTestCases.forEach(({ id, envVarName, apiKey }) => {

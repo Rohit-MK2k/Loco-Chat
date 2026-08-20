@@ -14,12 +14,14 @@ const makeStore = (sess: SessionData): SessionRepository => ({
     save: async () => {},
     load: async (id) => (id === sess.sessionId ? sess : null),
     list: async () => [sess.sessionId],
+    delete: async () => {},
 })
 
 const nullStore: SessionRepository = {
     save: async () => {},
     load: async () => null,
     list: async () => [],
+    delete: async () => {},
 }
 
 // ─── pure unit tests (no provider needed) ───────────────────────────────────
@@ -50,17 +52,23 @@ testProviders.forEach(({ id, apiKey, envName }) => {
 
         const fixture: SessionData = {
             sessionId: `test-session-${id}-0001`,
+            title: `Chat with ${id}`,
+            projectId: null,
             providerId: id,
             modelId: models[0],
             createdAt: 1723900000000,
+            lastUsedAt: 1723900001000,
             messages: [
-                { role: "user", content: "Hello" },
-                { role: "assistant", content: "Hi there!" },
+                { role: "user", content: "Hello", timestamp: 1723900000000 },
+                { role: "assistant", content: "Hi there!", timestamp: 1723900001000 },
             ],
         }
 
         const session = await Session.restore(fixture.sessionId, makeStore(fixture))
         assert.strictEqual(session.sessionId, fixture.sessionId)
+        assert.strictEqual(session.createdAt, fixture.createdAt)
+        assert.strictEqual(session.title, fixture.title)
+        assert.strictEqual(session.projectId, fixture.projectId)
     })
 
     test(`Session.restore rejects invalid modelId — ${id}`, async () => {
@@ -70,10 +78,13 @@ testProviders.forEach(({ id, apiKey, envName }) => {
 
         const invalidSession: SessionData = {
             sessionId: `test-invalid-${id}-0001`,
+            title: "Invalid Model Chat",
+            projectId: null,
             providerId: id,
             modelId: `not-a-real-${id}-model`,
             createdAt: Date.now(),
-            messages: [{ role: "user", content: "Hello." }, { role: "assistant", content: "Hi." }],
+            lastUsedAt: Date.now(),
+            messages: [{ role: "user", content: "Hello.", timestamp: Date.now() }],
         }
 
         await assert.rejects(
