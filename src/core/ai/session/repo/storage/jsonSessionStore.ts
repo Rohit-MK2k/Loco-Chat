@@ -35,4 +35,12 @@ export class JsonSessionStore implements SessionRepository {
             return [];
         }
     }
+
+    async delete(sessionId: string): Promise<void> {
+        try {
+            await fs.unlink(path.join(storageDir, `${sessionId}.json`));
+        } catch {
+            // no-op if file does not exist
+        }
+    }
 }
