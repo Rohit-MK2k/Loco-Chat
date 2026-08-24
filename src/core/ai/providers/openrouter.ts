@@ -1,8 +1,9 @@
 import { openrouterProvider } from '@earendil-works/pi-ai/providers/openrouter';
 import { BasePiAiProvider } from './BasePiAiProvider.js';
+import type { ProviderId } from './types.js';
 
 export class OpenrouterProvider extends BasePiAiProvider {
-    public id = 'openrouter';
+    public id: ProviderId = 'openrouter';
 
     constructor(apiKey: string) {
         super(apiKey, openrouterProvider);

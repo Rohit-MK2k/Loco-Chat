@@ -1,16 +1,16 @@
 import { GeminiProvider } from "./gemini.js";
 import { OpenrouterProvider } from "./openrouter.js";
-import type { AiProvider } from "./types.js";
+import type { AiProvider, ProviderId } from "./types.js";
 
 type ProviderFactory = (apiKey: string) => AiProvider
 
-const registry: Record<string, ProviderFactory> = {
+const registry: Record<ProviderId, ProviderFactory> = {
     google: (apiKey) => new GeminiProvider(apiKey),
-    openRouter: (apiKey) => new OpenrouterProvider(apiKey)
+    openrouter: (apiKey) => new OpenrouterProvider(apiKey)
 }
 
 
-export const getProvider = (id: string, apiKey: string): AiProvider => {
+export const getProvider = (id: ProviderId, apiKey: string): AiProvider => {
     const factory = registry[id]
     if (!factory) {
         throw new Error(`Unknown Provider: ${id}`)
@@ -18,6 +18,6 @@ export const getProvider = (id: string, apiKey: string): AiProvider => {
     return factory(apiKey)
 }
 
-export const ListProviderId = (): string[] =>{
-    return Object.keys(registry)
+export const ListProviderId = (): ProviderId[] =>{
+    return Object.keys(registry) as ProviderId[]
 }

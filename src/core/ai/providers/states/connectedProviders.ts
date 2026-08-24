@@ -1,10 +1,13 @@
 import type { ProviderAuthReader } from "../repo/providerAuthRepository.js";
-import { getProvider } from "../registry.js";
-import type { AiProvider } from "../types.js";
+import { getProvider, ListProviderId } from "../registry.js";
+import type { AiProvider, ProviderId } from "../types.js";
+
+const isProviderId = (id: string): id is ProviderId =>
+    (ListProviderId() as string[]).includes(id);
 
 
 interface ActiveProviderState {
-    providerId: string;
+    providerId: ProviderId;
     apiKey: string;
 }
 type ActiveProviders = ActiveProviderState[]
@@ -18,6 +21,9 @@ const _checkNullState = () => {
 }
 
 export const setOneActiveProvider = async (providerId: string, apiKey: string): Promise<void> => {
+    if (!isProviderId(providerId)) {
+        throw new Error(`Unknown provider: "${providerId}"`)
+    }
     const provider = getProvider(providerId, apiKey)
     const valid = await provider.validateApiKey()
     if (!valid) {
@@ -37,8 +43,8 @@ export const setAllActiveProviders = async (providers: ActiveProviders): Promise
     return checks.filter(c => !c.valid).map(c => c.p.providerId)
 }
 
-export const getActiveProvider = (providerId: string): {
-    id: string,
+export const getActiveProvider = (providerId: ProviderId): {
+    id: ProviderId,
     provider: AiProvider
 } => {
     _checkNullState()
@@ -57,7 +63,7 @@ export const getActiveProvider = (providerId: string): {
     }
 }
 
-export const getActiveProvidersId = (): string[] => {
+export const getActiveProvidersId = ():  ProviderId [] => {
     if (currentProviders.length == 0){
         throw new Error("no provider selected yet")
     }
@@ -68,7 +74,15 @@ export const initActiveProvider = async (loader: ProviderAuthReader): Promise<bo
     const config = await loader.loadAll()
     if (config.length == 0) return false
 
-    const skipped = await setAllActiveProviders(config)
+    const known = config.filter(c => {
+        if (!isProviderId(c.providerId)) {
+            console.warn(`Skipping unknown provider in storage: "${c.providerId}"`)
+            return false
+        }
+        return true
+    }) as ActiveProviders  // safe: isProviderId narrowed providerId to ProviderId
+
+    const skipped = await setAllActiveProviders(known)
     if (skipped.length > 0) {
         console.warn(`Skipped invalid provider keys: ${skipped.join(", ")}`)
     }

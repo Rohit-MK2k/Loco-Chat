@@ -1,8 +1,9 @@
 import { googleProvider } from '@earendil-works/pi-ai/providers/google';
 import { BasePiAiProvider } from './BasePiAiProvider.js';
+import type { ProviderId } from './types.js';
 
 export class GeminiProvider extends BasePiAiProvider {
-    public id = 'google';
+    public id: ProviderId = 'google';
 
     constructor(apiKey: string) {
         super(apiKey, googleProvider);

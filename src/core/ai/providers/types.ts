@@ -10,3 +10,5 @@ export interface AiProvider {
   listModels(): Promise<string[]>
   generateReply(messages: AppMessage[], model: string): Promise<string | undefined>
 }
+
+export type ProviderId = "google" | "openrouter"

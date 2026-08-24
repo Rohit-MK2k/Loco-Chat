@@ -1,10 +1,10 @@
 import { createModels, type Context, type Message, type Provider } from '@earendil-works/pi-ai';
-import type { AiProvider, AppMessage } from './types.js';
+import type { AiProvider, AppMessage, ProviderId } from './types.js';
 
 type ProviderFactory = () => Provider
 
 export abstract class BasePiAiProvider implements AiProvider {
-    public abstract id: string;
+    public abstract id: ProviderId;
     protected apiKey: string;
     protected modelsCollection;
 

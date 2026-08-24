@@ -1,3 +1,5 @@
+import type { ProviderId } from "../types.js";
+
 export type ProviderAuthConfigData = {
     providerId: string;
     apiKey: string;
@@ -6,7 +8,7 @@ export type ProviderAuthConfigData = {
 }
 
 export interface ProviderAuthReader {
-    load(providerId: string): Promise<ProviderAuthConfigData | null>;
+    load(providerId: ProviderId): Promise<ProviderAuthConfigData | null>;
     loadAll(): Promise<ProviderAuthConfigData[]>;
     list(): Promise<string[]>;
 }
@@ -16,4 +18,4 @@ export interface ProviderAuthWriter {
 }
 
 // Full read-write — for persistent storage implementations
-export interface ProviderAuthRepository extends ProviderAuthReader, ProviderAuthWriter {}
+export interface ProviderAuthRepository extends ProviderAuthReader, ProviderAuthWriter {}
