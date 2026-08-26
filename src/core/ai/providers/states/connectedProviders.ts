@@ -63,11 +63,16 @@ export const getActiveProvider = (providerId: ProviderId): {
     }
 }
 
-export const getActiveProvidersId = ():  ProviderId [] => {
+export const getActiveProvidersId = (): ProviderId[] => {
     if (currentProviders.length == 0){
         throw new Error("no provider selected yet")
     }
     return currentProviders.map((provider) => provider.providerId)
+}
+
+/** For test use only — resets module-level provider state between tests. */
+export const resetProviders = (): void => {
+    currentProviders = []
 }
 
 export const initActiveProvider = async (loader: ProviderAuthReader): Promise<boolean> => {
