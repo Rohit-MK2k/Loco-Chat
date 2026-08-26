@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { getActiveProvider } from "../providers/states/connectedProviders.js";
 import { ProviderSelection } from "../providers/states/providerSelection.js";
-import type { AppMessage } from "../providers/types.js";
+import type { AppMessage, ProviderId } from "../providers/types.js";
 import type { SessionRepository } from "./repo/sessionRepository.js";
 
 export class Session {
@@ -34,7 +34,7 @@ export class Session {
         return session;
     }
 
-    getAvailableModels(): Promise<Record<string, string[]>> {
+    getAvailableModels(): Promise<Record<ProviderId, string[]>> {
         return this.providerSelection.getAvailableModels();
     }
 
