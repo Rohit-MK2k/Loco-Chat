@@ -1,24 +1,33 @@
-import type { ProviderId } from "../types.js";
+import type { AiProvider, ProviderId } from "../types.js";
 import { getActiveProvider, getActiveProvidersId } from "./connectedProviders.js";
+
+export interface ProviderSelectionDeps {
+    getActiveProvidersId: () => ProviderId[];
+    getActiveProvider: (id: ProviderId) => { id: ProviderId; provider: AiProvider };
+}
 
 export class ProviderSelection {
     private providerId: ProviderId | null = null;
     private modelId: string | null = null;
     private cachedModels: Record<ProviderId, string[]> | null = null;
 
-    async getAvailableModels(forceRefresh = false): Promise<Record<ProviderId , string[]>> {
+    constructor(
+        private readonly deps: ProviderSelectionDeps = { getActiveProvidersId, getActiveProvider }
+    ) {}
+
+    async getAvailableModels(forceRefresh = false): Promise<Record<ProviderId, string[]>> {
         if (this.cachedModels && !forceRefresh) {
             return this.cachedModels;
         }
 
-        const providerIds = getActiveProvidersId();
+        const providerIds = this.deps.getActiveProvidersId();
         const entries = await Promise.all(
             providerIds.map(async (id) => {
-                const models = await getActiveProvider(id).provider.listModels();
+                const models = await this.deps.getActiveProvider(id).provider.listModels();
                 return [id, models] as [ProviderId, string[]];
             })
         );
-        this.cachedModels = Object.fromEntries(entries) as Record<ProviderId , string[]>;
+        this.cachedModels = Object.fromEntries(entries) as Record<ProviderId, string[]>;
         return this.cachedModels;
     }
 
@@ -39,3 +48,4 @@ export class ProviderSelection {
         return { providerId: this.providerId, modelId: this.modelId };
     }
 }
+
