@@ -7,7 +7,8 @@
     "test": "npm run test:unit",
     "test:unit": "tsx --test tests/unit/**/**/**/*.test.ts",
     "test:integration": "tsx --test tests/integration/**/**/**/*.test.ts",
-    "test:all": "tsx --test tests/**/**/**/**/*.test.ts"
+    "test:smoke": "tsx --test tests/smoke/**/**/**/*.test.ts",
+    "test:all": "tsx --test tests/unit/**/**/**/*.test.ts tests/integration/**/**/**/*.test.ts"
   },
   "repository": {
     "type": "git",
