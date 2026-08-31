@@ -4,6 +4,7 @@ import * as dotenv from "dotenv";
 import { Session } from "../../../../../src/core/ai/session/session.js";
 import { setOneActiveProvider } from "../../../../../src/core/ai/providers/states/connectedProviders.js";
 import type { SessionData, SessionRepository } from "../../../../../src/core/ai/session/repo/sessionRepository.js";
+import type { ProviderId } from "../../../../../src/core/ai/providers/types.js";
 
 // Integration: real provider API calls to list and validate models.
 // Requires GOOGLE_AI_API and OPENROUTER_AI_API env vars.
@@ -24,9 +25,15 @@ const makeStore = (sess: SessionData): SessionRepository => ({
     delete: async () => {},
 });
 
-const testProviders = [
+
+type ProviderTestCase = {
+    id: ProviderId,
+    apiKey: string | undefined,
+    envName: string
+}
+const testProviders: ProviderTestCase[] = [
     { id: "google", apiKey: process.env.GOOGLE_AI_API, envName: "GOOGLE_AI_API" },
-    { id: "openRouter", apiKey: process.env.OPENROUTER_AI_API ?? process.env.OPENROUETER_AI_API, envName: "OPENROUTER_AI_API" },
+    { id: "openrouter", apiKey: process.env.OPENROUTER_AI_API, envName: "OPENROUTER_AI_API" },
 ];
 
 // ─── session model selection ─────────────────────────────────────────────────
