@@ -6,7 +6,7 @@ import { OpenrouterProvider } from "../../../../../src/core/ai/providers/openrou
 import type { ProviderId } from "../../../../../src/core/ai/providers/types.js";
 
 // Smoke tests: real LLM completion calls.
-// Slow and cost money — run manually or in CI only.
+// Slow and cost money ï¿½ run manually or in CI only.
 // Run with: npm run test:smoke
 
 dotenv.config();
@@ -37,6 +37,7 @@ type ProviderCase = {
     id: ProviderId;
     instance: GeminiProvider | OpenrouterProvider;
     envName: string;
+    testModel: string;
 };
 
 const providers: ProviderCase[] = [
@@ -44,6 +45,7 @@ const providers: ProviderCase[] = [
         id: "google",
         instance: new GeminiProvider(process.env.GOOGLE_AI_API ?? ""),
         envName: "GOOGLE_AI_API",
+        testModel: "gemini-3.6-flash",
     },
     {
         id: "openrouter",
@@ -51,40 +53,31 @@ const providers: ProviderCase[] = [
             process.env.OPENROUTER_AI_API ?? process.env.OPENROUETER_AI_API ?? ""
         ),
         envName: "OPENROUTER_AI_API",
+        testModel: "openai/gpt-4o-mini",
     },
 ];
 
 // --- generateReply ------------------------------------------------------------
 
-providers.forEach(({ id, instance, envName }) => {
-    test(`generateReply returns non-empty string — ${id}`, async (t) => {
+providers.forEach(({ id, instance, envName, testModel }) => {
+    test(`generateReply returns non-empty string ï¿½ ${id}`, async (t) => {
         if (!process.env[envName]) throw new Error(`${envName} is not set`);
 
-        const models = await instance.listModels();
-        assert.ok(models.length > 0, "no models available to test generateReply with");
-
-        let reply: string | undefined;
+        let reply: string;
 
         try {
             reply = await instance.generateReply(
                 [{ role: "user", content: "say hello", timestamp: Date.now() }],
-                models[0]
+                testModel
             );
         } catch (err: unknown) {
             if (isInfrastructureError(err)) {
-                t.skip(`infrastructure issue — ${(err as any)?.message ?? err}`);
+                t.skip(`infrastructure issue ï¿½ ${(err as any)?.message ?? err}`);
                 return;
             }
             throw err;
         }
 
-        // Provider returned undefined — SDK swallowed the error (e.g. low balance,
-        // empty response). Not an app bug — skip with explanation.
-        if (reply === undefined) {
-            t.skip("provider returned undefined — possible infrastructure issue (low balance, empty response)");
-            return;
-        }
-
-        assert.ok(reply.length > 0, "expected non-empty reply from provider");
+        assert.ok(reply && reply.length > 0, "expected non-empty reply from provider");
     });
 });
