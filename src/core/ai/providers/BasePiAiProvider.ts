@@ -1,5 +1,6 @@
 import { createModels, type Context, type Message, type Provider } from '@earendil-works/pi-ai';
 import type { AiProvider, AppMessage, ProviderId } from './types.js';
+import { classifyProviderError } from './errors.js';
 
 type ProviderFactory = () => Provider
 
@@ -17,7 +18,7 @@ export abstract class BasePiAiProvider implements AiProvider {
     abstract validateApiKey(): Promise<boolean>;
     abstract listModels(): Promise<string[]>;
 
-    generateReply = async (messages: AppMessage[], modelId: string): Promise<string | undefined> => {
+    generateReply = async (messages: AppMessage[], modelId: string): Promise<string> => {
         const model = this.modelsCollection.getModel(this.id, modelId);
         if (!model) throw new Error(`Model ${modelId} not found for provider ${this.id}`);
 
@@ -30,7 +31,7 @@ export abstract class BasePiAiProvider implements AiProvider {
                         timestamp: msg.timestamp
                     };
                 } else {
-                    // We bypass TypeScript's strict AssistantMessage type since 
+                    // We bypass TypeScript's strict AssistantMessage type since
                     // the provider APIs only actually care about role and content
                     return {
                         role: "assistant",
@@ -41,7 +42,26 @@ export abstract class BasePiAiProvider implements AiProvider {
             })
         };
 
-        const response = await this.modelsCollection.complete(model, piContext, { apiKey: this.apiKey });
-        return response.content.find((block) => block.type === "text")?.text;
+        let response: Awaited<ReturnType<typeof this.modelsCollection.complete>>;
+        try {
+            response = await this.modelsCollection.complete(model, piContext, { apiKey: this.apiKey });
+        } catch (err: unknown) {
+            throw new Error(
+                `Provider ${this.id} request failed: ${(err as any)?.message ?? err}`
+            );
+        }
+
+        if (response.stopReason === "error" || response.errorMessage) {
+            const rawMessage = response.errorMessage ?? response.stopReason ?? "";
+            const classified = classifyProviderError(this.id, modelId, rawMessage);
+            if (classified) throw classified;
+            throw new Error(`Provider ${this.id} error: ${rawMessage}`);
+        }
+
+        const textBlock = response.content.find((block) => block.type === "text");
+        if (!textBlock) {
+            throw new Error(`Provider ${this.id} returned no text content`);
+        }
+        return textBlock.text ?? "";
     }
 }

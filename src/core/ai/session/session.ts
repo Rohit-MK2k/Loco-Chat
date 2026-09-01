@@ -42,7 +42,7 @@ export class Session {
         return this.providerSelection.select(providerId, modelId);
     }
 
-    async sendMessage(text: string): Promise<string | undefined> {
+    async sendMessage(text: string): Promise<string> {
         const { providerId, modelId } = this.providerSelection.getSelection();
 
         this.conversation.push({ role: "user", content: text, timestamp: Date.now() });
@@ -50,19 +50,17 @@ export class Session {
         const { provider } = getActiveProvider(providerId);
         const reply = await provider.generateReply(this.conversation, modelId);
 
-        if (reply) {
-            this.conversation.push({ role: "assistant", content: reply, timestamp: Date.now() });
-            await this.store.save({
-                sessionId: this.sessionId,
-                title: this.title,
-                projectId: this.projectId,
-                messages: this.conversation,
-                providerId,
-                modelId,
-                createdAt: this.createdAt,
-                lastUsedAt: Date.now(),
-            });
-        }
+        this.conversation.push({ role: "assistant", content: reply, timestamp: Date.now() });
+        await this.store.save({
+            sessionId: this.sessionId,
+            title: this.title,
+            projectId: this.projectId,
+            messages: this.conversation,
+            providerId,
+            modelId,
+            createdAt: this.createdAt,
+            lastUsedAt: Date.now(),
+        });
         return reply;
     }
 }
