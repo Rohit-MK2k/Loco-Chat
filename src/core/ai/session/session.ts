@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { getActiveProvider } from "../providers/states/connectedProviders.js";
 import { ProviderSelection } from "../providers/states/providerSelection.js";
-import type { AppMessage, ProviderId } from "../providers/types.js";
+import type { AppMessage, ChunkCallback, ProviderId } from "../providers/types.js";
 import type { SessionRepository } from "./repo/sessionRepository.js";
 
 export class Session {
@@ -42,13 +42,13 @@ export class Session {
         return this.providerSelection.select(providerId, modelId);
     }
 
-    async sendMessage(text: string): Promise<string> {
+    async sendMessage(text: string, onChunk?: ChunkCallback): Promise<string> {
         const { providerId, modelId } = this.providerSelection.getSelection();
 
         this.conversation.push({ role: "user", content: text, timestamp: Date.now() });
 
         const { provider } = getActiveProvider(providerId);
-        const reply = await provider.generateReply(this.conversation, modelId);
+        const reply = await provider.generateReply(this.conversation, modelId, onChunk);
 
         this.conversation.push({ role: "assistant", content: reply, timestamp: Date.now() });
         await this.store.save({
