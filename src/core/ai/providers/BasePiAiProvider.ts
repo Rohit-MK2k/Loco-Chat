@@ -1,5 +1,5 @@
 import { createModels, type Context, type Message, type Provider } from '@earendil-works/pi-ai';
-import type { AiProvider, AppMessage, ProviderId } from './types.js';
+import type { AiProvider, AppMessage, ChunkCallback, ProviderId } from './types.js';
 import { classifyProviderError } from './errors.js';
 
 type ProviderFactory = () => Provider
@@ -18,7 +18,7 @@ export abstract class BasePiAiProvider implements AiProvider {
     abstract validateApiKey(): Promise<boolean>;
     abstract listModels(): Promise<string[]>;
 
-    generateReply = async (messages: AppMessage[], modelId: string): Promise<string> => {
+    generateReply = async (messages: AppMessage[], modelId: string, onChunk?: ChunkCallback): Promise<string> => {
         const model = this.modelsCollection.getModel(this.id, modelId);
         if (!model) throw new Error(`Model ${modelId} not found for provider ${this.id}`);
 
@@ -42,14 +42,30 @@ export abstract class BasePiAiProvider implements AiProvider {
             })
         };
 
-        let response: Awaited<ReturnType<typeof this.modelsCollection.complete>>;
+        let stream: ReturnType<typeof this.modelsCollection.stream>;
         try {
-            response = await this.modelsCollection.complete(model, piContext, { apiKey: this.apiKey });
+            stream = this.modelsCollection.stream(model, piContext, { apiKey: this.apiKey });
         } catch (err: unknown) {
             throw new Error(
                 `Provider ${this.id} request failed: ${(err as any)?.message ?? err}`
             );
         }
+
+        let fullText = "";
+        try {
+            for await (const event of stream) {
+                if (event.type === "text_delta") {
+                    fullText += event.delta;
+                    onChunk?.(event.delta);
+                }
+            }
+        } catch (err: unknown) {
+            throw new Error(
+                `Provider ${this.id} stream failed: ${(err as any)?.message ?? err}`
+            );
+        }
+
+        const response = await stream.result();
 
         if (response.stopReason === "error" || response.errorMessage) {
             const rawMessage = response.errorMessage ?? response.stopReason ?? "";
@@ -58,10 +74,15 @@ export abstract class BasePiAiProvider implements AiProvider {
             throw new Error(`Provider ${this.id} error: ${rawMessage}`);
         }
 
-        const textBlock = response.content.find((block) => block.type === "text");
-        if (!textBlock) {
-            throw new Error(`Provider ${this.id} returned no text content`);
+        if (!fullText) {
+            const textBlock = response.content.find((block) => block.type === "text");
+            if (textBlock?.text) {
+                fullText = textBlock.text;
+            } else {
+                throw new Error(`Provider ${this.id} returned no text content`);
+            }
         }
-        return textBlock.text ?? "";
+
+        return fullText;
     }
 }
