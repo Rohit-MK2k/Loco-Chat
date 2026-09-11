@@ -1,7 +1,7 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "config"],
+  "exclude": ["node_modules", "dist", "config, client"],
   "compilerOptions": {
     // File Layout
     "rootDir": "./src",
@@ -41,6 +41,6 @@
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force",
-    "skipLibCheck": true,
+    "skipLibCheck": true
   }
 }
