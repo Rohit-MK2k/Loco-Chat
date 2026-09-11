@@ -56,6 +56,8 @@ The project strictly adheres to the **Core/Skin Separation** architectural bound
 +---------------------------------------------------------------+
 ```
 
+For full sequence diagrams illustrating component interactions, see [SEQUENCE_DIAGRAMS.md](./SEQUENCE_DIAGRAMS.md).
+
 ### Key Architectural Tenets
 
 1. **Zero UI Coupling in Core:** All modules in [`src/core/`](file:///C:/Users/kakal/Documents/Rohit%27s/Projects/LocoChat/src/core) operate as standalone Node.js / TypeScript code. They possess no knowledge of Electron, Chromium, IPC channels, or DOM elements.
