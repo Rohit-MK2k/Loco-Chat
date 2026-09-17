@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import type { SessionData, SessionRepository } from "../sessionRepository.js";
+import type { SessionData, SessionRepository } from "../../../../../src/core/ai/session/repo/sessionRepository.js";
 
 // ponytail: NODE_ENV switch, add explicit config injection if env var isn't enough
 const storageDir = process.env.NODE_ENV === "production"

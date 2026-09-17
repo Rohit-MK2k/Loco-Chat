@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
-import type { ProviderAuthRepository, ProviderAuthConfigData } from '../providerAuthRepository.js'
+import type { ProviderAuthRepository, ProviderAuthConfigData } from '../../../../../src/core/ai/providers/repo/providerAuthRepository.js'
 
 const storageDir = process.env.NODE_ENV === "production"
     ? path.join(os.homedir(), ".locoChat")
