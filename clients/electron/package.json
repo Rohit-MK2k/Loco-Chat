@@ -18,11 +18,14 @@
       "dist/**/*",
       "../../dist/**/*",
       "../ui/dist/**/*",
+      "../storage/dist/**/*",
+      "../storage/package.json",
       "package.json"
     ]
   },
   "dependencies": {
-    "@locochat/core": "file:../.."
+    "@locochat/core": "file:../..",
+    "@locochat/storage": "file:../storage"
   },
   "devDependencies": {
     "electron": "^44.3.0",

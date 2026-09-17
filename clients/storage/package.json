@@ -1,0 +1,16 @@
+{
+  "name": "@locochat/storage",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc --watch"
+  },
+  "dependencies": {
+    "@locochat/core": "file:../.."
+  },
+  "devDependencies": {
+    "@types/node": "^26.1.1"
+  }
+}
