@@ -1,5 +1,6 @@
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import * as path from 'path';
+import { registerSessionHandlers } from './ipc/sessionHandlers.js';
 import { fileURLToPath } from 'url';
 import { isDev } from './utils.js';
 
@@ -37,6 +38,7 @@ function createWindow() {
 
 app.whenReady().then(() => {
     createWindow();
+    registerSessionHandlers(ipcMain);
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) createWindow();
