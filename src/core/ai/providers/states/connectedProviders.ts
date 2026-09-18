@@ -83,9 +83,6 @@ export const getActiveProvider = (providerId: ProviderId): {
 }
 
 export const getActiveProvidersId = (): ProviderId[] => {
-    if (currentProviders.length == 0){
-        throw new Error("no provider selected yet")
-    }
     return currentProviders.map((provider) => provider.providerId)
 }
 
