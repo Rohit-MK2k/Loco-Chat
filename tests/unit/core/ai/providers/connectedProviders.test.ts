@@ -44,11 +44,8 @@ test("getActiveProvider throws when no providers are set", () => {
 // ─── getActiveProvidersId ─────────────────────────────────────────────────────
 // Empty-state guard is pure. Post-set behavior requires network → integration.
 
-test("getActiveProvidersId throws when no providers are set", () => {
-    assert.throws(
-        () => getActiveProvidersId(),
-        /no provider selected yet/
-    );
+test("getActiveProvidersId returns empty array when no providers are set", () => {
+    assert.deepStrictEqual(getActiveProvidersId(), []);
 });
 
 // ─── initActiveProvider ───────────────────────────────────────────────────────
