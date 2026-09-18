@@ -11,5 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
         const handler = (_event: any, chunk: string) => callback(chunk);
         ipcRenderer.on(channel, handler);
         return () => ipcRenderer.removeListener(channel, handler);
-    }
+    },
+    getSupportedProviders: () => ipcRenderer.invoke('provider:supported'),
+    getConnectedProviders: () => ipcRenderer.invoke('provider:connected'),
+    connectProvider: (providerId: string, apiKey: string) => ipcRenderer.invoke('provider:connect', { providerId, apiKey })
 });
