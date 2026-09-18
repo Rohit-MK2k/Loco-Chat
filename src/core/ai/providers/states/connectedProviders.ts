@@ -1,4 +1,4 @@
-import type { ProviderAuthReader } from "../repo/providerAuthRepository.js";
+import type { ProviderAuthReader, ProviderAuthWriter } from "../repo/providerAuthRepository.js";
 import { getProvider, ListProviderId } from "../registry.js";
 import type { AiProvider, ProviderId } from "../types.js";
 
@@ -30,6 +30,25 @@ export const setOneActiveProvider = async (providerId: string, apiKey: string): 
         throw new Error(`Invalid API key for provider: ${providerId}`)
     }
     currentProviders.push({ providerId, apiKey })
+}
+
+/**
+ * Orchestrates validating, setting the provider as active, AND persisting 
+ * the API key using the provided storage writer implementation.
+ * 
+ * The Client (Electron/Mobile) will call this function and inject its 
+ * specific storage mechanism.
+ */
+export const connectAndSaveProvider = async (
+    providerId: string, 
+    apiKey: string, 
+    writer: ProviderAuthWriter
+): Promise<void> => {
+    // 1. Validate and activate in memory
+    await setOneActiveProvider(providerId, apiKey);
+    
+    // 2. Persist the credentials via the injected interface
+    await writer.save(providerId, apiKey);
 }
 
 export const setAllActiveProviders = async (providers: ActiveProviders): Promise<string[]> => {
