@@ -10,7 +10,9 @@ import {
     handleSessionList,
     handleSessionLoad,
     handleSendMessage,
-    handleSessionUnload
+    handleSessionUnload,
+    handleGetAvailableModels,
+    handleSelectModel
 } from '../../../../../clients/electron/ipc/sessionHandlers.js';
 
 test('handleSessionList returns data from store', async (t) => {
@@ -85,4 +87,46 @@ test('handleSessionUnload evicts session from tracker', async (t) => {
         () => handleSendMessage('unload-id', 'hello', () => {}),
         /Session not loaded: unload-id/
     );
+});
+
+test('handleGetAvailableModels routes to session', async (t) => {
+    t.afterEach(() => mock.restoreAll());
+
+    await handleSessionUnload('models-id');
+
+    const dummySession = {
+        sessionId: 'models-id',
+        getAvailableModels: async () => ({ google: ['gemini-pro'] })
+    } as any;
+    
+    mock.method(Session, 'restore', async () => dummySession);
+    await handleSessionLoad('models-id');
+
+    const models = await handleGetAvailableModels('models-id');
+    assert.deepStrictEqual(models, { google: ['gemini-pro'] });
+});
+
+test('handleSelectModel routes to session', async (t) => {
+    t.afterEach(() => mock.restoreAll());
+
+    await handleSessionUnload('select-id');
+
+    let selectedProvider = '';
+    let selectedModel = '';
+
+    const dummySession = {
+        sessionId: 'select-id',
+        selectModel: async (pId: string, mId: string) => {
+            selectedProvider = pId;
+            selectedModel = mId;
+        }
+    } as any;
+    
+    mock.method(Session, 'restore', async () => dummySession);
+    await handleSessionLoad('select-id');
+
+    await handleSelectModel('select-id', 'google', 'gemini-pro');
+    
+    assert.strictEqual(selectedProvider, 'google');
+    assert.strictEqual(selectedModel, 'gemini-pro');
 });
