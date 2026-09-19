@@ -29,6 +29,22 @@ export async function handleSessionUnload(sessionId: string) {
     activeSessions.delete(sessionId);
 }
 
+export async function handleGetAvailableModels(sessionId: string) {
+    const session = activeSessions.get(sessionId);
+    if (!session) {
+        throw new Error(`Session not loaded: ${sessionId}`);
+    }
+    return await session.getAvailableModels();
+}
+
+export async function handleSelectModel(sessionId: string, providerId: string, modelId: string) {
+    const session = activeSessions.get(sessionId);
+    if (!session) {
+        throw new Error(`Session not loaded: ${sessionId}`);
+    }
+    await session.selectModel(providerId, modelId);
+}
+
 export function registerSessionHandlers(ipcMain: IpcMain) {
     ipcMain.handle('session:list', async () => {
         return await handleSessionList();
@@ -46,5 +62,13 @@ export function registerSessionHandlers(ipcMain: IpcMain) {
 
     ipcMain.handle('session:unload', async (_event, sessionId: string) => {
         await handleSessionUnload(sessionId);
+    });
+
+    ipcMain.handle('session:getAvailableModels', async (_event, sessionId: string) => {
+        return await handleGetAvailableModels(sessionId);
+    });
+
+    ipcMain.handle('session:selectModel', async (_event, { sessionId, providerId, modelId }: { sessionId: string, providerId: string, modelId: string }) => {
+        await handleSelectModel(sessionId, providerId, modelId);
     });
 }

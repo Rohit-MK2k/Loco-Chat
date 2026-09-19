@@ -14,5 +14,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     },
     getSupportedProviders: () => ipcRenderer.invoke('provider:supported'),
     getConnectedProviders: () => ipcRenderer.invoke('provider:connected'),
-    connectProvider: (providerId: string, apiKey: string) => ipcRenderer.invoke('provider:connect', { providerId, apiKey })
+    connectProvider: (providerId: string, apiKey: string) => ipcRenderer.invoke('provider:connect', { providerId, apiKey }),
+    getAvailableModels: (sessionId: string) => ipcRenderer.invoke('session:getAvailableModels', sessionId),
+    selectModel: (sessionId: string, providerId: string, modelId: string) => ipcRenderer.invoke('session:selectModel', { sessionId, providerId, modelId })
 });
